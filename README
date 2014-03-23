@@ -1,0 +1,104 @@
+*introduction
+
+It is common to have a lot of  resistors and you want a specific value but you don't memorize the resistor color code  .
+
+In this project I tried to solve this problem by making a circuit using Arduino and some components which allows you to enter the value of resistor and have the color code as an output in more than one method:
+on serial monitor (Arduino IDE).
+Using 3 RGB LEDs.
+
+You can input the values using:serial monitor or by using Keypad.
+
+Building the project
+
+*part list
+
+Arduino or any compatible device /1/ (I used a clone named SHAMduino we produce in the company I works at named Atadiat ).
+Keypad /1/.
+RGB LEDs /3/.
+Demultiplexer CD4053 /2/ .
+Seven segments 3 digits /1/
+Seven segment driver HEF4543B /1/.
+Resistor 470 ohm /12/.
+Testboard /1/.
+Wires and jumpers.
+
+*Hardware details:
+
+**Arduino:
+Moist of you know this popular platform which I find the best choice for building fast prototypes, before switching to raw electronics using microcontrollers and PCBs.
+
+**Keypad:
+this component is the input device of this project which consist of raws and columns (ex:4×4) , the numbers of pins is equal to the numbers of  raws+columns.
+
+**RGB LED:
+this kind of RGB LED is consist of internal leds which are:red,green and blue . we can produce any color we want using mix of Red ,Green and Blue.
+For example if we want to have a white color we must switch on the 3 internal leds.
+
+(NOTE: there is 2 types of RGB led common anode and common cathode )  
+
+**Demultiplexer:
+You will see that the pins of Arduino will run-out, so I must reduce the number of used pins, so I used a demultiplexer  for this purpose. With using this demultiplexer I will need 3 pins as  output for RED , green and blue pins if the RGB LEDs , 1 pin for selecting channel inside every chip and 2 pin to avtice/de-active chips .Without using this demultiplexer I will need 9 pins to drive the RGB LEDs.
+
+If you don't know what demultiplexer is, you can imagine it as a switch, which can switch between to channel every channel have 3 input/output , with common input .
+
+The reason  I used 2 of CD4053 is that every chip have 2 channel  and I need 3 triple channel ,so I used 2 of them.
+
+So when I need to output some color the enable loop will be like this :
+
+channel 1 chip 1 (on)
+channel 2 chip 1 (off)
+chip 2 (off)
+
+channel 1 chip 1 (off)
+channel 2 chip 1 (on)
+chip 2 (off)
+
+chip 1 (off)
+channel 1 chip 2 (on)
+
+
+**Seven segment driver :
+Also I used the driver to reduce the number of  required pins to drive 7seg  from 7 to 4 pins .
+One more feature about  HEF4543B is than I can control the output of this chip if I have common anode or cathode 7seg .
+
+The reason behind using 7seg is for future development, to make the device portable and see the entry using 7seg.
+
+
+*Software details:
+
+The sketch behind this project is consist of the following functions 
+
+ seven_seg_disp(int num)
+rgbled(int r,int g,int b)
+colortorgb(int color)
+rgbdisp()
+printbandcolor(int band)
+value()
+start()
+
+Before explain every function lets understand the code and how it works.
+
+First in the loop function you can see  a while loop with condition DO==TRUE. DO is a key for execution , with initial value FALSE .If user didn't finish correctly the input DO will change to true. keys is important to make sure that some codes doesn't execute unless I unlock the key.
+Then you will find 2 structures:first is IF and the second is FOR, IF is used to make sure that FOR doesn't execute unless user press '*', which make DO2 (the key of  FOR loop) TRUE. These tow structure is dedicated to keypad input method. 
+In the FOR loop user may finish the entry by pressing '*' tow times, because some times we have one digit like 1 ohm.
+You can see in both input method(keypad and serial monitor) that I used a counter 'numofdigits' the reason is related to manipulating the entered values (in function value()). 
+Input from keypad or computer is coded using “ASCII” so to get the real value we must subtract it from '0' value in ASCII.
+
+Now lets talk about every function:
+
+seven_seg_disp(int num)
+		Output the D0-D3 on Arduino pins connected to 7seg driver.
+rgbled(int r,int g,int b)
+		Output the arguments to RGB pins connected to Arduino.
+colortorgb(int color)
+		Convert numeric value of resistor bands to RGB color.
+rgbdisp()
+		Output function for both 7seg or RGB leds ,it activated and deactivate demultiplexers 			and channels  alternatively. 
+printbandcolor(int band)
+		Printing the color code of every band on Serial monitor.
+Value()
+		Manipulating entered values according to possibilities  of entries and store the values in  		matrix called colorcode.
+start()
+		To make sure that some values return to initial value especially digits matrix which is 			used for entry and must by blank every time we enter new values.
+
+
